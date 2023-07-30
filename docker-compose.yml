@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  countries:
+    build: ./countries/
+    command: gunicorn --bind 0.0.0.0:5000 main:app
+    volumes:
+      - ./countries/:/usr/src/app/
+    ports:
+      - 5000:5000
+    depends_on:
+      - countryDb
+  countryDb:
+    image: postgres:13
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=petshop
+    ports:
+      - 5433:5432
+  categories:
+    build: ./categories/
+    command: gunicorn --bind 0.0.0.0:5000 main:app
+    volumes:
+      - ./categories/:/usr/src/app/
+    ports:
+      - 5001:5000
+    depends_on:
+      - categoryDb
+  categoryDb:
+    image: postgres:13
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=petshop
+    ports:
+      - 5432:5432
+volumes:
+  postgres_data:

@@ -24,6 +24,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
+import org.agoncal.application.petstore.client.BackendPython;
 import org.agoncal.application.petstore.model.Category;
 import org.agoncal.application.petstore.util.Loggable;
 
@@ -77,6 +78,9 @@ public class CategoryBean implements Serializable
    @Inject
    private Conversation conversation;
 
+    @Inject
+    transient private BackendPython backendPython;
+
    @PersistenceContext(unitName = "applicationPetstorePU", type = PersistenceContextType.EXTENDED)
    private EntityManager entityManager;
 
@@ -115,7 +119,8 @@ public class CategoryBean implements Serializable
    public Category findById(Long id)
    {
 
-      return this.entityManager.find(Category.class, id);
+      //return this.entityManager.find(Category.class, id);
+       return this.backendPython.getCategoryById(id);
    }
 
    /*
@@ -131,11 +136,13 @@ public class CategoryBean implements Serializable
          if (this.id == null)
          {
             this.entityManager.persist(this.category);
+            this.backendPython.saveCategory(this.category);
             return "search?faces-redirect=true";
          }
          else
          {
             this.entityManager.merge(this.category);
+            this.backendPython.updateCategory(this.id, this.category);
             return "view?faces-redirect=true&id=" + this.category.getId();
          }
       }
@@ -152,8 +159,9 @@ public class CategoryBean implements Serializable
 
       try
       {
+          this.backendPython.deleteCategory(getId());
          Category deletableEntity = findById(getId());
-
+         
          this.entityManager.remove(deletableEntity);
          this.entityManager.flush();
          return "search?faces-redirect=true";
@@ -217,8 +225,8 @@ public class CategoryBean implements Serializable
       Root<Category> root = countCriteria.from(Category.class);
       countCriteria = countCriteria.select(builder.count(root)).where(
             getSearchPredicates(root));
-      this.count = this.entityManager.createQuery(countCriteria)
-            .getSingleResult();
+      //this.count = this.entityManager.createQuery(countCriteria).getSingleResult();
+       this.count = 1;
 
       // Populate this.pageItems
 
@@ -228,7 +236,8 @@ public class CategoryBean implements Serializable
             .select(root).where(getSearchPredicates(root)));
       query.setFirstResult(this.page * getPageSize()).setMaxResults(
             getPageSize());
-      this.pageItems = query.getResultList();
+      //this.pageItems = query.getResultList();
+       this.pageItems = backendPython.getCategories();
    }
 
    private Predicate[] getSearchPredicates(Root<Category> root)

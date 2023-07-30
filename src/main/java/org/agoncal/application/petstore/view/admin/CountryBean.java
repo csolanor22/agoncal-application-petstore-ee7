@@ -24,6 +24,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
+import org.agoncal.application.petstore.client.BackendPython;
 import org.agoncal.application.petstore.model.Country;
 import org.agoncal.application.petstore.util.Loggable;
 
@@ -76,6 +77,9 @@ public class CountryBean implements Serializable
 
    @Inject
    private Conversation conversation;
+   
+   @Inject
+   transient private BackendPython backendPython;
 
    @PersistenceContext(unitName = "applicationPetstorePU", type = PersistenceContextType.EXTENDED)
    private EntityManager entityManager;
@@ -115,7 +119,8 @@ public class CountryBean implements Serializable
    public Country findById(Long id)
    {
 
-      return this.entityManager.find(Country.class, id);
+      //return this.entityManager.find(Country.class, id);
+       return this.backendPython.getCountryById(id);
    }
 
    /*
@@ -131,11 +136,13 @@ public class CountryBean implements Serializable
          if (this.id == null)
          {
             this.entityManager.persist(this.country);
+            this.backendPython.saveCountry(this.country);
             return "search?faces-redirect=true";
          }
          else
          {
             this.entityManager.merge(this.country);
+            this.backendPython.updateCountry(this.id, this.country);
             return "view?faces-redirect=true&id=" + this.country.getId();
          }
       }
@@ -152,6 +159,7 @@ public class CountryBean implements Serializable
 
       try
       {
+          this.backendPython.deleteCountry(getId());
          Country deletableEntity = findById(getId());
 
          this.entityManager.remove(deletableEntity);
@@ -217,8 +225,8 @@ public class CountryBean implements Serializable
       Root<Country> root = countCriteria.from(Country.class);
       countCriteria = countCriteria.select(builder.count(root)).where(
             getSearchPredicates(root));
-      this.count = this.entityManager.createQuery(countCriteria)
-            .getSingleResult();
+      //this.count = this.entityManager.createQuery(countCriteria).getSingleResult();
+      this.count = 1;
 
       // Populate this.pageItems
 
@@ -228,7 +236,8 @@ public class CountryBean implements Serializable
             .select(root).where(getSearchPredicates(root)));
       query.setFirstResult(this.page * getPageSize()).setMaxResults(
             getPageSize());
-      this.pageItems = query.getResultList();
+      //this.pageItems = query.getResultList();
+       this.pageItems = backendPython.getCountries();
    }
 
    private Predicate[] getSearchPredicates(Root<Country> root)

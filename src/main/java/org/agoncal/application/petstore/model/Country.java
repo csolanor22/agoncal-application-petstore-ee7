@@ -159,8 +159,15 @@ public class Country implements Serializable
     }
 
     @Override
-   public String toString()
-   {
-      return name;
-   }
+    public String toString() {
+        return "Country{" +
+            "id=" + id +
+            ", version=" + version +
+            ", isoCode='" + isoCode + '\'' +
+            ", name='" + name + '\'' +
+            ", printableName='" + printableName + '\'' +
+            ", iso3='" + iso3 + '\'' +
+            ", numcode='" + numcode + '\'' +
+            '}';
+    }
 }

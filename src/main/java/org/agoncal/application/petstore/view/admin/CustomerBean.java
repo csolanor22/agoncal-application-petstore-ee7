@@ -24,6 +24,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
+import org.agoncal.application.petstore.client.BackendPython;
 import org.agoncal.application.petstore.model.Customer;
 import org.agoncal.application.petstore.util.Loggable;
 
@@ -76,6 +77,9 @@ public class CustomerBean implements Serializable
 
    @Inject
    private Conversation conversation;
+   
+   @Inject
+   transient private BackendPython backendPython;
 
    @PersistenceContext(unitName = "applicationPetstorePU", type = PersistenceContextType.EXTENDED)
    private EntityManager entityManager;
@@ -208,7 +212,6 @@ public class CustomerBean implements Serializable
 
    public void paginate()
    {
-
       CriteriaBuilder builder = this.entityManager.getCriteriaBuilder();
 
       // Populate this.count
@@ -282,8 +285,8 @@ public class CustomerBean implements Serializable
     */
 
    public List<Customer> getAll()
-   {
-
+   {  
+       
       CriteriaQuery<Customer> criteria = this.entityManager
             .getCriteriaBuilder().createQuery(Customer.class);
       return this.entityManager.createQuery(
